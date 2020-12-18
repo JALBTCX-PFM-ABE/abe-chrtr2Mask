@@ -1,0 +1,121 @@
+  /*
+  for (NV_INT32 i = 0 ; i < height ; i++)
+    {
+      NV_I32_COORD2 coord;
+
+      coord.y = i;
+
+
+      NV_F64_COORD2 nxy;
+
+      nxy.y = chrtr2_header.mbr.slat + (NV_FLOAT64) i * chrtr2_header.lat_grid_size_degrees + half_y;
+
+
+      for (NV_INT32 j = 0 ; j < width ; j++)
+	{
+          coord.x = j;
+
+          nxy.x = chrtr2_header.mbr.wlon + (NV_FLOAT64) j * chrtr2_header.lon_grid_size_degrees + half_x;
+
+          chrtr2_read_record (chrtr2_handle, coord, &chrtr2_record);
+
+
+          //  Clear previously land masked data.  Note that we never land mask real or digitized data so we can safely set these to NULL.
+
+          if (chrtr2_record.status & CHRTR2_LAND_MASK) memset (&chrtr2_record, 0, sizeof (CHRTR2_RECORD));
+
+
+          //  This is either NULL or interpolated so we need to mask it if it's land.
+
+          if (!chrtr2_record.status || (chrtr2_record.status & CHRTR2_INTERPOLATED))
+            {
+              NV_BOOL hit = NVFalse;
+              NV_INT16 elev;
+
+              switch (options.source)
+                {
+                case 0:
+                  elev = read_srtm_topo (nxy.y, nxy.x);
+                  if (elev && elev > 0 && elev != 32767)
+                    {
+                      depth = -((NV_FLOAT32) elev);
+                      chrtr2_record.status = (chrtr2_record.status & CHRTR2_REAL_MASK) | CHRTR2_LAND_MASK;
+                      hit = NVTrue;
+                    }
+                  break;
+
+                case 1:
+                  if (read_srtm_mask (nxy.y, nxy.x))
+                    {
+                      depth = (NV_FLOAT32) mask;
+                      chrtr2_record.status = (chrtr2_record.status & CHRTR2_DIGITIZED_MASK) | CHRTR2_LAND_MASK;
+                      hit = NVTrue;
+                    }
+
+                case 2:
+                  if (mask01 (nxy.y, 0.0, nxy.x, 0.0))
+                    {
+                      depth = (NV_FLOAT32) mask;
+                      chrtr2_record.status = (chrtr2_record.status & CHRTR2_DIGITIZED_MASK) | CHRTR2_LAND_MASK;
+                      hit = NVTrue;
+                    }
+                  break;
+                }
+
+
+              //  Interpolated or NULL value in grid, mask says land.
+
+              if (hit)
+                {
+                  chrtr2_record.z = depth;
+                }
+              else
+                {
+                  //  Mask says water but we asked for feathering.
+
+                  if (options.source && options.feather)
+                    {
+                      //  Interpolated water value in grid.
+
+                      if (chrtr2_record.z > 0.0)
+                        {
+                          if (options.force)
+                            {
+                              if (chrtr2_record.z < force_value)
+                                {
+                                  chrtr2_record.z = force_value;
+                                  chrtr2_record.status = (chrtr2_record.status & CHRTR2_DIGITIZED_MASK) | CHRTR2_LAND_MASK;
+                                  hit = NVTrue;
+                                }
+                            }
+                        }
+
+
+                      //  Interpolated land value in grid.
+
+                      else
+                        {
+                          chrtr2_record.z = force_value;
+                          chrtr2_record.status = (chrtr2_record.status & CHRTR2_DIGITIZED_MASK) | CHRTR2_LAND_MASK;
+                          hit = NVTrue;
+                        }
+                    }
+                }
+
+
+              //  If we modified the value, write out the record.
+
+              if (hit) chrtr2_write_record (chrtr2_handle, coord, chrtr2_record);
+            }
+
+          min_z = qMin (chrtr2_record.z, min_z);
+          max_z = qMax (chrtr2_record.z, max_z);
+        }
+
+      progress.mbar->setValue (i);
+      qApp->processEvents ();
+    }
+
+  progress.mbar->setValue (height);
+  qApp->processEvents ();
+  */
